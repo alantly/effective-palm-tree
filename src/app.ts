@@ -1,27 +1,29 @@
-import * as express from 'express';
-import ifttt from './routes/ifttt/v1/ifttt-controller';
+import * as Express from 'Express';
+import { normalizePort } from './utils';
+import ifttt from './routes/ifttt';
 
-const app = express();
-const BASE_API = '/api';
-const BASE_IFTTT_ROUTE = BASE_API + '/ifttt/v1';
+const app = Express();
+const API_BASE = '/api';
 
-app.use(BASE_IFTTT_ROUTE, ifttt);
-
-function normalizePort(val: string = '3000') {
-  const port = parseInt(val, 10);
-
-  if (isNaN(port)) {
-    // named pipe
-    return val;
+const headerHandler: Express.RequestHandler = (req, res, next) => {
+  if (!req.accepts('application/json') || !req.acceptsCharsets('utf-8') ||
+    !req.acceptsEncodings(['gzip', 'deflate'])) {
+    res.status(406).send("Not Acceptable");
   }
-
-  if (port >= 0) {
-    // port number
-    return port;
-  }
-
-  return 3000;
+  next();
 }
+
+app.use(API_BASE, headerHandler, ifttt);
+
+app.use((req, res, next) => {
+  res.status(404).send('Not Found');
+});
+
+const errorHandler: Express.ErrorRequestHandler = (err, req, res, next) => {
+  res.status(500);
+  res.send('Server Error');
+}
+app.use(errorHandler);
 
 let port = normalizePort(process.env.PORT)
 app.listen(port, function () {

@@ -12,7 +12,10 @@ yarn run clean
 ```
 
 ## Run server
-Build first using `yarn run build` or `yarn run bw`
 ```
+yarn run build
 yarn start
 ```
+
+## Run dev server
+In two terminals run `yarn run bw` and `yarn run watch`
