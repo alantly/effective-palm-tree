@@ -1,4 +1,5 @@
-import * as Express from 'Express';
+import * as Express from 'express';
+import { connect } from './models';
 import { normalizePort } from './utils';
 import ifttt from './routes/ifttt';
 
@@ -25,7 +26,11 @@ const errorHandler: Express.ErrorRequestHandler = (err, req, res, next) => {
 }
 app.use(errorHandler);
 
-let port = normalizePort(process.env.PORT)
-app.listen(port, function () {
-  console.log('Example app listening on port 3000!')
-})
+connect((err) => {
+  if (err) throw err;
+
+  let port = normalizePort(process.env.PORT)
+  app.listen(port, () => {
+    console.log('Listening on port 3000!');
+  });
+});

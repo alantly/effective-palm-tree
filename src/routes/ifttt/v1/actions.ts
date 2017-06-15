@@ -1,4 +1,4 @@
-import * as Express from 'Express';
+import * as Express from 'express';
 const router = Express.Router();
 
 router.get('/action', (req, res, next) => {

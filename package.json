@@ -23,8 +23,12 @@
   "homepage": "https://github.com/alantly/effective-palm-tree#readme",
   "dependencies": {
     "@types/express": "^4.0.35",
+    "@types/mongodb": "^2.2.5",
+    "@types/mongoose": "^4.7.17",
     "@types/node": "^7.0.31",
     "express": "^4.15.3",
+    "mongodb": "^2.2.28",
+    "mongoose": "^4.10.6",
     "nodemon": "^1.11.0",
     "typescript": "^2.3.4"
   }

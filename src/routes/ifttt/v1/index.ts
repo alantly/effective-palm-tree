@@ -1,7 +1,7 @@
-import * as Express from 'Express';
+import * as Express from 'express';
+const router = Express.Router();
 import actions from './actions';
 import triggers from './triggers';
-const router = Express.Router();
 
 router.use('/actions', actions);
 router.use('/triggers', triggers);
