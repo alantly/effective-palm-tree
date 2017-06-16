@@ -4,7 +4,7 @@ import { connect } from './models';
 import { normalizePort, validateEnv } from './utils';
 import ifttt from './routes/ifttt';
 
-validateEnv(['STEAM_WEB_API', 'IFTTT_CHANNEL_KEY']);
+validateEnv(['STEAM_WEB_API', 'IFTTT_CHANNEL_KEY', 'TWILIO_SID', 'TWILIO_AUTH_TOKEN', 'TWILIO_NUMBER']);
 
 const app = Express();
 const API_BASE = '/api';

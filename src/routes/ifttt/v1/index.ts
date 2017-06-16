@@ -13,13 +13,15 @@ router.get('/status', (req, res, next) => {
 router.post('/test/setup', (req, res, next) => {
   res.json({
     data: {
-      // accessToken: "taSvYgeXfM1HjVISJbUXVBIw1YUkKABm",
       samples: {
         triggers: {
-          trigger: {},
+          new_dota_pro_game: {},
         },
         actions: {
-          action: {}
+          send_sms_message: {
+            phone_number: '626-423-8125',
+            message: 'test SMS message',
+          }
         },
       }
     }
@@ -31,8 +33,5 @@ router.post('/test/setup', (req, res, next) => {
 // trigger fields
 // dynamic options
 // dynamic validations
-
-// action fields
-// dynamic options
 
 export default router;
