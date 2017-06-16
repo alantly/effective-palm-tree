@@ -1,13 +1,13 @@
 import * as Express from 'express';
 import * as BodyParser from 'body-parser';
 import { connect } from './models';
-import { normalizePort } from './utils';
+import { normalizePort, validateEnv } from './utils';
 import ifttt from './routes/ifttt';
+
+validateEnv(['STEAM_WEB_API', 'IFTTT_CHANNEL_KEY']);
 
 const app = Express();
 const API_BASE = '/api';
-
-const IFTTT_KEY = 'ek6P4HrcvePVHcvan-9OWxt2stp6yrvjLPJmCXjX0tLuq4H4-h94c0NO3BKMY9at';
 
 // Verify Headers
 app.use((req, res, next) => {
@@ -21,7 +21,7 @@ app.use((req, res, next) => {
 // Verify Channel Key
 app.use((req, res, next) => {
   let key = req.header('IFTTT-Channel-Key');
-  if (key === IFTTT_KEY) {
+  if (key === process.env.IFTTT_CHANNEL_KEY) {
     next();
   } else {
     res.status(401).json({

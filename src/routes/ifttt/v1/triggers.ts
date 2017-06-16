@@ -19,7 +19,7 @@ interface Trigger {
   }
 }
 
-const DOTA_GAMES = "https://api.steampowered.com/IDOTA2Match_570/GetLiveLeagueGames/v0001/?key=955BC393BC4FB192C58255FCB61B033F";
+const DOTA_GAMES = `https://api.steampowered.com/IDOTA2Match_570/GetLiveLeagueGames/v0001/?key=${process.env.STEAM_WEB_API}`;
 
 router.post('/new_dota_pro_game', (req, res, next) => {
   let body: TriggerRequest = req.body;

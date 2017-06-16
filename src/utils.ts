@@ -13,3 +13,11 @@ export function normalizePort(val: string = '3000') {
 
   return 3000;
 }
+
+export function validateEnv(keys: string[]) {
+  keys.forEach((key) => {
+    if (!(key in process.env)) {
+      throw new Error('Missing API key in environment.');
+    }
+  })
+}
