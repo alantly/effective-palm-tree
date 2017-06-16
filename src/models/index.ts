@@ -17,3 +17,5 @@ export function connect(done: callback) {
     done();
   });
 }
+
+export * from './game';

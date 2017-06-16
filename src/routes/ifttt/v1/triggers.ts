@@ -1,6 +1,7 @@
-import { Item, ItemType } from '../../../models';
 import * as DB from 'mongoose';
 import * as Express from 'express';
+import fetch from 'node-fetch';
+import { Game, GameType } from '../../../models';
 const router = Express.Router();
 
 interface TriggerRequest {
@@ -18,30 +19,62 @@ interface Trigger {
   }
 }
 
-router.post('/trigger', (req, res, next) => {
-  console.log('Trigger called');
+const DOTA_GAMES = "https://api.steampowered.com/IDOTA2Match_570/GetLiveLeagueGames/v0001/?key=955BC393BC4FB192C58255FCB61B033F";
+
+router.post('/new_dota_pro_game', (req, res, next) => {
   let body: TriggerRequest = req.body;
 
   if (body.limit === 0) return res.json({ data: [] });
 
   let limit = body.limit || 50;
 
-  Item.create({ itemName: `hello ${Date.now()}`}).then(() => {
-    Item.find().limit(limit).sort({ createdAt: -1 }).exec().then((items) => {
-
-      let triggers: Trigger[] = items.map((item: ItemType) => {
-        return {
-          name: item.itemName,
-          meta: {
-            id: item._id,
-            timestamp: Math.floor(item.createdAt.getTime()/1000),
-          }
-        }
-      });
-
+  fetch(DOTA_GAMES).then((resp) => {
+    return resp.json();
+  }).then((gameData) => {
+    let parsedGames = parse(gameData);
+    Game.insertMany(parsedGames).catch((e) => {
+      // ignore duplicate ids
+    }).then(() => {
+      return Game.find().limit(limit).sort({ createdAt: -1 }).exec();
+    }).then((games) => {
+      let triggers = createTriggers(games as GameType[]);
       res.json({ data: triggers });
     });
+  }).catch((e) => {
+    console.error(e);
+    res.status(503).end();
   });
 });
+
+function parse(gameData: any): GameType[] {
+  let games: GameType[] = gameData.result.games.filter((game: any) => {
+    return game.league_tier === 2;
+  }).map((game: any) => {
+    return {
+      radiant: game.radiant_team.team_name as string,
+      dire: game.dire_team.team_name as string,
+      matchId: game.match_id as number,
+    }
+  });
+
+  // sort in decending order. Assume newer games have older match ids
+  return games.sort((a, b) => {
+    return b.matchId - a.matchId;
+  });
+}
+
+function createTriggers(games: GameType[]): Trigger[] {
+  return games.map((game: GameType) => {
+    return {
+      radiant: game.radiant,
+      dire: game.dire,
+      match_id: game.matchId,
+      meta: {
+        id: game._id,
+        timestamp: Math.floor(game.createdAt.getTime()/1000),
+      }
+    }
+  });
+}
 
 export default router;

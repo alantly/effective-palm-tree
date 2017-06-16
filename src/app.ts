@@ -39,6 +39,7 @@ app.use((req, res, next) => {
 });
 
 const errorHandler: Express.ErrorRequestHandler = (err, req, res, next) => {
+  console.error(err);
   res.status(500);
   res.send('Server Error');
 }
