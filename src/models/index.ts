@@ -17,5 +17,3 @@ export function connect(done: callback) {
     done();
   });
 }
-
-export * from './item';
