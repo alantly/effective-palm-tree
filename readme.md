@@ -1,5 +1,7 @@
 # Effective Palm Tree
 
+[Postman](https://www.getpostman.com/collections/5e17fef838683470e176)
+
 ## build
 ```
 yarn
