@@ -3,6 +3,7 @@ import * as BodyParser from 'body-parser';
 import { connect } from './models';
 import { normalizePort, validateEnv } from './utils';
 import ifttt from './routes/ifttt';
+import games from './routes/games';
 
 validateEnv(['STEAM_WEB_API', 'IFTTT_CHANNEL_KEY', 'TWILIO_SID', 'TWILIO_AUTH_TOKEN', 'TWILIO_NUMBER']);
 
@@ -33,6 +34,7 @@ app.use((req, res, next) => {
 app.use(BodyParser.json());
 
 app.use(API_BASE, ifttt);
+app.use(API_BASE, games);
 
 app.use((req, res, next) => {
   res.status(404).send('Not Found');
