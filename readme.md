@@ -17,5 +17,11 @@ yarn run build
 yarn start
 ```
 
+## Run tests
+```
+yarn run build
+yarn test
+```
+
 ## Run dev server
 In two terminals run `yarn run bw` and `yarn run watch`
