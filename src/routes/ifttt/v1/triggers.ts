@@ -28,8 +28,10 @@ router.post('/new_dota_pro_game', (req, res, next) => {
 
   let limit = body.limit || 50;
 
-  fetch(DOTA_GAMES).then((resp) => {
-    return resp.json();
+  fetch(DOTA_GAMES, { headers: { 'accept-encoding': 'identity' }}).then((resp) => {
+    return resp.json().then((data) => {
+      return validateResponse(data);
+    });
   }).then((gameData) => {
     let parsedGames = parse(gameData);
     Game.insertMany(parsedGames).catch((e) => {
@@ -45,6 +47,14 @@ router.post('/new_dota_pro_game', (req, res, next) => {
     res.status(503).end();
   });
 });
+
+function validateResponse(data: any) {
+  // json schema
+  // if (data.contains('result.games')) {
+  //   let games = data.result.games;
+  //
+  // }
+}
 
 function parse(gameData: any): GameType[] {
   let games: GameType[] = gameData.result.games.filter((game: any) => {

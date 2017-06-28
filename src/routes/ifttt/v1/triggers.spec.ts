@@ -1,15 +1,16 @@
 import * as Mocha from 'mocha';
 import { expect } from 'chai';
-import { stub } from 'sinon';
+// import { stub } from 'sinon';
 import * as request from 'supertest';
-import * as fetchMock from 'fetch-mock';
+// import * as fetchMock from 'fetch-mock';
+import * as nock from 'nock';
 
 import * as Express from 'express';
 import * as BodyParser from 'body-parser';
 import routes from './triggers';
 
 import * as DB from 'mongoose';
-let insertStub = stub(DB.Model, 'insertMany');
+// let insertStub = stub(DB.Model, 'insertMany');
 
 const steamMockData = {
   result: {
@@ -30,12 +31,13 @@ app.use(routes);
 
 describe('Trigger routes', () => {
   describe('post /new_dota_pro_game', () => {
-    afterEach(() => {
-      fetchMock.get('*', steamMockData);
+
+    beforeEach(() => {
+      nock('https://api.github.com')
+        .get('/users/octocat/followers')
+        .reply(200, followersResponse);
     })
-    afterEach(() => {
-      fetchMock.restore();
-    })
+
     it('sending limit 0 should return empty data', (done) => {
       request(app)
         .post('/new_dota_pro_game')
@@ -45,11 +47,13 @@ describe('Trigger routes', () => {
         .expect({ data: [] }, done);
     });
 
-    // it('should successfully check games and return game data', (done) => {
-    //   request(app)
-    //     .post('/new_dota_pro_game')
-    //     .expect(200)
-    //     .expect({ data: [] }, done);
-    // });
+    it('should successfully check games and return game data', (done) => {
+      nock.recorder.rec({ output_objects: true });
+      request(app)
+        .post('/new_dota_pro_game')
+        .expect(200, done)
+        // have something
+        // .expect({ data: [ ] }, done);
+    });
   });
 });
