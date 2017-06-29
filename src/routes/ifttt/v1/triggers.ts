@@ -1,7 +1,9 @@
 import * as DB from 'mongoose';
 import * as Express from 'express';
 import fetch from 'node-fetch';
+import* as AJV from 'ajv';
 import { Game, GameType } from '../../../models';
+const STEAM_DOTA_API_SCHEMA = require('../../../../schema/steam-dota-api');
 const router = Express.Router();
 
 interface TriggerRequest {
@@ -25,6 +27,9 @@ export interface GameDataTrigger extends TriggerMetaData {
   match_id: number;
 }
 
+const ajv = new AJV();
+const validate = ajv.compile(STEAM_DOTA_API_SCHEMA);
+
 const DOTA_GAMES = `https://api.steampowered.com/IDOTA2Match_570/GetLiveLeagueGames/v0001/?key=${process.env.STEAM_WEB_API}`;
 
 router.post('/new_dota_pro_game', (req, res, next) => {
@@ -34,7 +39,11 @@ router.post('/new_dota_pro_game', (req, res, next) => {
 
   let limit = body.limit || 50;
   fetch(DOTA_GAMES, { headers: { 'accept-encoding': 'identity' }}).then((resp) => {
-    return resp.json()
+    return resp.json();
+  }).then((data) => {
+    let valid = validate(data);
+    if (!valid) throw new Error('Invalid Json Response');
+    return data;
   }).then((gameData) => {
     let parsedGames = parse(gameData);
     Game.insertMany(parsedGames).catch((e) => {
@@ -50,11 +59,6 @@ router.post('/new_dota_pro_game', (req, res, next) => {
     res.status(503).end();
   });
 });
-
-function validateResponse(data: any) {
-  // json schema
-  return data
-}
 
 function parse(gameData: any): GameType[] {
   let games: GameType[] = gameData.result.games.filter((game: any) => {
