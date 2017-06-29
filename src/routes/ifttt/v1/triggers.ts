@@ -1,7 +1,9 @@
 import * as DB from 'mongoose';
 import * as Express from 'express';
 import fetch from 'node-fetch';
+import* as AJV from 'ajv';
 import { Game, GameType } from '../../../models';
+const STEAM_DOTA_API_SCHEMA = require('../../../../schema/steam-dota-api');
 const router = Express.Router();
 
 interface TriggerRequest {
@@ -25,6 +27,9 @@ export interface GameDataTrigger extends TriggerMetaData {
   match_id: number;
 }
 
+const ajv = new AJV();
+const validate = ajv.compile(STEAM_DOTA_API_SCHEMA);
+
 const DOTA_GAMES = `https://api.steampowered.com/IDOTA2Match_570/GetLiveLeagueGames/v0001/?key=${process.env.STEAM_WEB_API}`;
 
 router.post('/new_dota_pro_game', (req, res, next) => {
@@ -34,26 +39,27 @@ router.post('/new_dota_pro_game', (req, res, next) => {
 
   let limit = body.limit || 50;
   fetch(DOTA_GAMES, { headers: { 'accept-encoding': 'identity' }}).then((resp) => {
-    return resp.json()
-  }).then((gameData) => {
-    let parsedGames = parse(gameData);
-    Game.insertMany(parsedGames).catch((e) => {
-      // ignore duplicate ids
-    }).then(() => {
-      return Game.find().limit(limit).sort({ createdAt: -1 }).exec();
-    }).then((games) => {
-      let triggers = createTriggers(games as GameType[]);
-      res.json({ data: triggers });
-    });
+    if (resp.ok) {
+      return resp.json().then(insertNewGames);
+    }
+  }).then(() => {
+    return Game.find().limit(limit).sort({ createdAt: -1 }).exec();
+  }).then((games) => {
+    let triggers = createTriggers(games as GameType[]);
+    res.json({ data: triggers });
   }).catch((e) => {
     console.error(e);
     res.status(503).end();
   });
 });
 
-function validateResponse(data: any) {
-  // json schema
-  return data
+function insertNewGames(data: any) {
+  let valid = validate(data);
+  if (!valid) throw new Error('Invalid Json Response');
+  let parsedGames = parse(data);
+  return Game.insertMany(parsedGames).catch((e) => {
+    // ignore duplicate ids
+  });
 }
 
 function parse(gameData: any): GameType[] {

@@ -1,0 +1,38 @@
+{
+  "title": "Games",
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "definitions": {
+    "game": {
+      "type": "object",
+      "properties": {
+        "radiant_team": { "$ref": "#/definitions/team" },
+        "dire_team": { "$ref": "#/definitions/team" },
+        "match_id": { "type": "number" },
+        "league_tier": { "enum": [ 0, 1, 2 ] }
+      },
+      "required": ["match_id", "league_tier"]
+    },
+    "team": {
+      "type": "object",
+      "properties": {
+        "team_name": { "type": "string" }
+      },
+      "required": ["team_name"]
+    }
+  },
+
+  "type": "object",
+  "properties": {
+    "result": {
+      "type": "object",
+      "properties": {
+        "games": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/game" }
+        }
+      },
+      "required": ["games"]
+    }
+  },
+  "required": ["result"]
+}
