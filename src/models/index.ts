@@ -1,6 +1,6 @@
 import * as DB from 'mongoose';
 
-const DB_URL = process.env.MONGODB_URI || "mongodb://localhost:27017/mydb";
+const DB_URL = process.env.MONGODB_URI;
 
 type callback = (err?: Error) => void;
 

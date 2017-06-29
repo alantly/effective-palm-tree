@@ -17,7 +17,7 @@ app.use(routes);
 describe('Trigger routes', () => {
 
   beforeEach((done) => {
-    DB.connect('mongodb://localhost:27017/test', () => {
+    DB.connect(process.env.MONGODB_URI_TEST, () => {
       DB.connection.db.dropDatabase(done);
     })
   })

@@ -5,7 +5,7 @@ import { normalizePort, validateEnv } from './utils';
 import ifttt from './routes/ifttt';
 import games from './routes/games';
 
-validateEnv(['STEAM_WEB_API', 'IFTTT_CHANNEL_KEY', 'TWILIO_SID', 'TWILIO_AUTH_TOKEN', 'TWILIO_NUMBER']);
+validateEnv(['MONGODB_URI', 'STEAM_WEB_API', 'IFTTT_CHANNEL_KEY', 'TWILIO_SID', 'TWILIO_AUTH_TOKEN', 'TWILIO_NUMBER']);
 
 const app = Express();
 const API_BASE = '/api';
