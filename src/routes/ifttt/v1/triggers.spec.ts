@@ -1,55 +1,72 @@
 import * as Mocha from 'mocha';
 import { expect } from 'chai';
-import { stub } from 'sinon';
 import * as request from 'supertest';
-import * as fetchMock from 'fetch-mock';
-
+import * as nock from 'nock';
+import * as DB from 'mongoose';
 import * as Express from 'express';
 import * as BodyParser from 'body-parser';
-import routes from './triggers';
+import routes, { GameDataTrigger } from './triggers';
+import { Game, GameType } from '../../../models';
 
-import * as DB from 'mongoose';
-let insertStub = stub(DB.Model, 'insertMany');
-
-const steamMockData = {
-  result: {
-    games: [
-      {
-        radiant_team: 'r_team_1',
-        dire_team: 'd_team_1',
-        league_tier: 2,
-        match_id: 12345,
-      }
-    ]
-  }
-}
+const STEAM_RESPONSE = require('../../../../data/steam-api-response');
 
 const app = Express();
 app.use(BodyParser.json());
 app.use(routes);
 
 describe('Trigger routes', () => {
+
+  beforeEach((done) => {
+    DB.connect(process.env.MONGODB_URI_TEST, () => {
+      DB.connection.db.dropDatabase(done);
+    })
+  })
+
+  afterEach((done) => {
+    DB.connection.close(done);
+  })
+
   describe('post /new_dota_pro_game', () => {
-    afterEach(() => {
-      fetchMock.get('*', steamMockData);
+
+    beforeEach(() => {
+      nock('https://api.steampowered.com:443')
+        .get('/IDOTA2Match_570/GetLiveLeagueGames/v0001/')
+        .query({ key: process.env.STEAM_WEB_API })
+        .reply(200, STEAM_RESPONSE);
     })
-    afterEach(() => {
-      fetchMock.restore();
-    })
+
     it('sending limit 0 should return empty data', (done) => {
       request(app)
         .post('/new_dota_pro_game')
         .set('Accept', 'application/json')
         .send({ limit: 0 })
         .expect(200)
-        .expect({ data: [] }, done);
+        .end((err, res) => {
+          expect(res.body).to.have.keys('data');
+          expect(res.body.data).to.be.an('array');
+          let data: GameDataTrigger[] = res.body.data;
+          expect(data.length).to.be.eq(0);
+          done();
+        });
     });
 
-    // it('should successfully check games and return game data', (done) => {
-    //   request(app)
-    //     .post('/new_dota_pro_game')
-    //     .expect(200)
-    //     .expect({ data: [] }, done);
-    // });
+    it('should successfully check games and return game data', (done) => {
+      request(app)
+        .post('/new_dota_pro_game')
+        .expect(200)
+        .end((err, res) => {
+          let data: GameDataTrigger[] = res.body.data;
+          expect(data.length).to.be.eq(1);
+          let first = data[0];
+          Game.find({ matchId: first.match_id }).then((obj: GameType[]) => {
+            expect(obj[0].matchId).to.be.eq(first.match_id);
+            expect(obj[0].radiant).to.be.eq(first.radiant);
+            expect(obj[0].dire).to.be.eq(first.dire);
+            done();
+          }).catch((err) => {
+            done(err);
+          })
+        });
+    });
   });
 });
