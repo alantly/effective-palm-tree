@@ -12,11 +12,17 @@ interface TriggerRequest {
   ifttt_source?: object; // Applet id and url
 }
 
-interface Trigger {
+interface TriggerMetaData {
   meta: {
     id: string;
     timestamp: number;
   }
+}
+
+export interface GameDataTrigger extends TriggerMetaData {
+  radiant: string;
+  dire: string;
+  match_id: number;
 }
 
 const DOTA_GAMES = `https://api.steampowered.com/IDOTA2Match_570/GetLiveLeagueGames/v0001/?key=${process.env.STEAM_WEB_API}`;
@@ -27,11 +33,8 @@ router.post('/new_dota_pro_game', (req, res, next) => {
   if (body.limit === 0) return res.json({ data: [] });
 
   let limit = body.limit || 50;
-
   fetch(DOTA_GAMES, { headers: { 'accept-encoding': 'identity' }}).then((resp) => {
-    return resp.json().then((data) => {
-      return validateResponse(data);
-    });
+    return resp.json()
   }).then((gameData) => {
     let parsedGames = parse(gameData);
     Game.insertMany(parsedGames).catch((e) => {
@@ -50,10 +53,8 @@ router.post('/new_dota_pro_game', (req, res, next) => {
 
 function validateResponse(data: any) {
   // json schema
-  // if (data.contains('result.games')) {
-  //   let games = data.result.games;
-  //
-  // }
+  console.log(data)
+  return data
 }
 
 function parse(gameData: any): GameType[] {
@@ -73,7 +74,7 @@ function parse(gameData: any): GameType[] {
   });
 }
 
-function createTriggers(games: GameType[]): Trigger[] {
+function createTriggers(games: GameType[]): GameDataTrigger[] {
   return games.map((game: GameType) => {
     return {
       radiant: game.radiant,

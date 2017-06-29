@@ -33,7 +33,6 @@
     "@types/nock": "^8.2.1",
     "@types/node": "^7.0.31",
     "@types/node-fetch": "^1.6.7",
-    "@types/sinon": "^2.3.1",
     "@types/supertest": "^2.0.1",
     "@types/twilio": "^0.0.9",
     "body-parser": "^1.17.2",
@@ -46,7 +45,6 @@
     "nock": "^9.0.13",
     "node-fetch": "^1.7.1",
     "nodemon": "^1.11.0",
-    "sinon": "^2.3.4",
     "supertest": "^3.0.0",
     "twilio": "^3.3.0",
     "typescript": "^2.3.4"
