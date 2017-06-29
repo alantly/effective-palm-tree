@@ -6,6 +6,7 @@ import * as DB from 'mongoose';
 import * as Express from 'express';
 import * as BodyParser from 'body-parser';
 import routes, { GameDataTrigger } from './triggers';
+import { Game, GameType } from '../../../models';
 
 const STEAM_RESPONSE = require('../../../../data/steam-api-response');
 
@@ -27,12 +28,12 @@ describe('Trigger routes', () => {
 
   describe('post /new_dota_pro_game', () => {
 
-    // beforeEach(() => {
-    //   nock('https://api.steampowered.com:443')
-    //     .get('/IDOTA2Match_570/GetLiveLeagueGames/v0001/')
-    //     .query({ key: process.env.STEAM_WEB_API })
-    //     .reply(200, STEAM_RESPONSE);
-    // })
+    beforeEach(() => {
+      nock('https://api.steampowered.com:443')
+        .get('/IDOTA2Match_570/GetLiveLeagueGames/v0001/')
+        .query({ key: process.env.STEAM_WEB_API })
+        .reply(200, STEAM_RESPONSE);
+    })
 
     it('sending limit 0 should return empty data', (done) => {
       request(app)
@@ -55,8 +56,16 @@ describe('Trigger routes', () => {
         .expect(200)
         .end((err, res) => {
           let data: GameDataTrigger[] = res.body.data;
-          console.log(data)
-          done();
+          expect(data.length).to.be.eq(1);
+          let first = data[0];
+          Game.find({ matchId: first.match_id }).then((obj: GameType[]) => {
+            expect(obj[0].matchId).to.be.eq(first.match_id);
+            expect(obj[0].radiant).to.be.eq(first.radiant);
+            expect(obj[0].dire).to.be.eq(first.dire);
+            done();
+          }).catch((err) => {
+            done(err);
+          })
         });
     });
   });

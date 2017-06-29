@@ -53,7 +53,6 @@ router.post('/new_dota_pro_game', (req, res, next) => {
 
 function validateResponse(data: any) {
   // json schema
-  console.log(data)
   return data
 }
 
